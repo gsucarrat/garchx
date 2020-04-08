@@ -10,10 +10,10 @@ To install the development version available here at Github, first download the 
 
     system("R CMD INSTALL --build garchx")
 
-Alternatively, you can try installing directly from GitHub with the following code (remember to change x.x):
+Alternatively, you can try installing the current development version directly from GitHub with the following code (remember to change x.x):
 
     install.packages(
-      "https://github.com/gsucarrat/garchx/raw/master/garchx_x.x.tar.gz",
+      "https://github.com/gsucarrat/garchx/raw/master/garchx_devel.tar.gz",
       repos = NULL, type = "source"
     )
     
