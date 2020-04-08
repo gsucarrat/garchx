@@ -1,6 +1,5 @@
 # garchx
-The R Package *garchx* provides flexible and robust GARCH-X modelling.
-* CRAN webpage: [https://CRAN.R-project.org/package=garchx]( https://CRAN.R-project.org/package=garchx)
+The R Package *garchx* provides flexible and robust GARCH-X modelling. CRAN webpage: [https://CRAN.R-project.org/package=garchx]( https://CRAN.R-project.org/package=garchx)
 
 # Installation
 The following R command installs the stable version from CRAN:
