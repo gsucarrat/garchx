@@ -1,0 +1,34 @@
+Version 1.1 (TBA):
+==================
+
+* garchx:
+- c.code argument: new default TRUE
+- new argument: vcov.type
+- the arch and garch orders changed place in the order argument, i.e. order[1] now refers to the garch order, and order[2] now refers to the arch order
+
+* garchxRecursion: improved speed when the garch order is 1 or greater, since the function now calls compiled c-code for the recursion
+
+* garchxAvar: new function, computes the asymptotic coefficient-covariance of a model by simulation
+
+* garchxObjective: minor changes for improved numerical robustness
+
+* vcov.garchx: new argument vcov.type
+
+* fitted.garchx: new argument as.zoo (logical)
+
+* residuals.garchx: new argument as.zoo (logical)
+
+* new functions:
+- nobs.garchx
+- quantile.garchx
+- toLatex.garchx
+
+* fixes:
+ - vcov.garchx: now works when verbose=FALSE in the garchx object it is applied to
+ - print.garchx: now works when verbose=FALSE in the garchx object it is applied to
+
+
+Version 1.0 (7 April 2020):
+===========================
+
+First version. The version numbering '1.0' means the release is considered to be fairly stable and well-tested.
