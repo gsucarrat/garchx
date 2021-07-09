@@ -19,7 +19,8 @@ refit.garchx <- function(object, newy=NULL, newxreg=NULL,
   }else{
     coefs <- coef.garchx(object)
     result <- garchx(newy, arch=archArg, garch=garchArg, asym=asymArg,
-      xreg=newxreg, initial.values=coefs, estimate=FALSE, turbo=TRUE)
+      xreg=newxreg, initial.values=coefs, backcast.values=backcast.values,
+      estimate=FALSE, turbo=TRUE)
     result$convergence <- NA
     result$iterations <- NA
     result$evaluations <- NA
