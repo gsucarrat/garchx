@@ -15,7 +15,7 @@ refit.garchx <- function(object, newy=NULL, newxreg=NULL,
   ##refit:
   if(reestimate){
     result <- garchx(newy, arch=archArg, garch=garchArg, asym=asymArg,
-      xreg=newxreg, backcast.values=backcast.values)
+      xreg=newxreg, backcast.values=backcast.values, ...)
   }else{
     coefs <- coef.garchx(object)
     result <- garchx(newy, arch=archArg, garch=garchArg, asym=asymArg,
