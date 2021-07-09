@@ -19,6 +19,7 @@ Alternatively, you can try installing the development version directly from GitH
     
 # Resources
 * CRAN webpage: [https://CRAN.R-project.org/package=garchx]( https://CRAN.R-project.org/package=garchx)
+* Article (forthcoming in [The R Journal](https://journal.r-project.org/)): [https://mpra.ub.uni-muenchen.de/100301/](https://mpra.ub.uni-muenchen.de/100301/)
 
 # License
 This package is free and open source software, licensed under GPL (>= 2)
