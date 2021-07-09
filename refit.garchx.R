@@ -23,7 +23,7 @@ refit.garchx <- function(object, newy=NULL, newxreg=NULL,
     result$convergence <- NA
     result$iterations <- NA
     result$evaluations <- NA
-    result$message <- "not applicable, since 'estimate = FALSE'"
+    result$message <- "not applicable, since 'reestimate = FALSE'"
     result$fitted <- fitted.garchx(result)
     result$residuals <- residuals.garchx(result)
     result$hessian <- object$hessian
