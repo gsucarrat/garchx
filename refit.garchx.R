@@ -1,33 +1,29 @@
 refit.garchx <- function(object, newy=NULL, newxreg=NULL,
-  reestimate=FALSE, ...)
+  backcast.values=NULL, reestimate=FALSE, ...)
 {
   ##check:
   if( is.null(newy)){ stop("'newy' cannot be NULL") }
   if( !is.null(object$xreg) && is.null(newxreg) ){
     stop("'newxreg' is missing")
   }
-
-  ##splice old and new data:
-  y <- c(object$y.coredata, coredata(as.zoo(newy)))
-  if( is.null(newxreg) ){
-    xregArg <- NULL
-  }else{
-    xregArg <- rbind(object$xreg, newxreg)
-  }
   
-  ##obtain spec:    
+  ##obtain garch spec:    
   archArg <- object$arch
   garchArg <- object$garch 
   asymArg <- object$asym
 
   ##refit:
   if(reestimate){
-    result <- garchx(y, arch=archArg, garch=garchArg, asym=asymArg,
-      xreg=xregArg)
+    result <- garchx(newy, arch=archArg, garch=garchArg, asym=asymArg,
+      xreg=newxreg, backcast.values=backcast.values)
   }else{
     coefs <- coef.garchx(object)
-    result <- garchx(y, arch=archArg, garch=garchArg, asym=asymArg,
-      xreg=xregArg, initial.values=coefs, estimate=FALSE, turbo=TRUE)
+    result <- garchx(newy, arch=archArg, garch=garchArg, asym=asymArg,
+      xreg=newxreg, initial.values=coefs, estimate=FALSE, turbo=TRUE)
+    result$convergence <- NA
+    result$iterations <- NA
+    result$evaluations <- NA
+    result$message <- "not applicable, since 'estimate = FALSE'"
     result$fitted <- fitted.garchx(result)
     result$residuals <- residuals.garchx(result)
     result$hessian <- object$hessian
