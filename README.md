@@ -6,11 +6,7 @@ The following R command installs the stable version from CRAN:
 
     install.packages('garchx', dependencies = TRUE)
 
-To install the current development version available here at Github, first download the tarball (i.e. the file named garchx_devel.tar.gz). Next, run:
-
-    system("R CMD INSTALL --build garchx")
-
-Alternatively, you can try installing the development version directly from GitHub with the following code:
+To install the current development version available here at Github, use the following command:
 
     install.packages(
       "https://github.com/gsucarrat/garchx/raw/master/garchx_devel.tar.gz",
