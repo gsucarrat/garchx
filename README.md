@@ -19,7 +19,7 @@ Alternatively, you can try installing the development version directly from GitH
     
 # Resources
 * CRAN webpage: [https://CRAN.R-project.org/package=garchx]( https://CRAN.R-project.org/package=garchx)
-* [garchx: Flexible and Robust GARCH-X Modelling](https://journal.r-project.org/archive/2021/RJ-2021-057/RJ-2021-057.pdf)
+* [garchx: Flexible and Robust GARCH-X Modelling](https://journal.r-project.org/archive/2021/RJ-2021-057/RJ-2021-057.pdf) (article in The R Journal)
 
 # License
 This package is free and open source software, licensed under GPL (>= 2)
