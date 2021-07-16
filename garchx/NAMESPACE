@@ -1,0 +1,31 @@
+##c code:
+useDynLib("garchx")
+
+## import:
+import("zoo")
+importFrom("stats", "coef", "dnorm", "fitted", "logLik", "nlminb", "nobs", "numericDeriv", "optimHess", "pnorm", "quantile", "residuals", "rnorm", "runif", "predict", "vcov", "window")
+importFrom("utils", "toLatex", "tail")
+
+export(
+  ##main functions:
+  "garchxSim", "garchxAvar", "garchxRecursion", "garchxObjective", "garchx",
+
+  ##extraction functions:
+  "coef.garchx", "fitted.garchx", "logLik.garchx", "nobs.garchx", "predict.garchx",
+  "print.garchx", "quantile.garchx", "residuals.garchx", "toLatex.garchx", "vcov.garchx",
+
+  ##other functions:
+  "gdiff", "glag", "rmnorm", "ttest0", "waldtest0"
+)
+
+##methods for class garchx:
+S3method("coef", "garchx")
+S3method("fitted", "garchx")
+S3method("logLik", "garchx")
+S3method("nobs", "garchx")
+S3method("predict", "garchx")
+S3method("print", "garchx")
+S3method("quantile", "garchx")
+S3method("residuals", "garchx")
+S3method("toLatex", "garchx")
+S3method("vcov", "garchx")

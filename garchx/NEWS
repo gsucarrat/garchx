@@ -1,0 +1,67 @@
+Version 1.3 (15 July 2021):
+===========================
+
+* garchx():
+- the non-default value on the backcast.values argument changed, see documentation
+- new argument: estimate
+- minor changes to the documentation
+
+* garchxObjective(): an additional (positivity) check of the parameters was added; the check is only undertaken when the xreg' argument in garchx() is not NULL
+
+* predict.garchx(): the default of the n.sim argument changed to NULL
+
+* toLatex(): minor changes to the print
+
+* print.garchx(): minor changes to the print
+
+* new functions: gdiff(), glag()
+
+* fix: the returned value from garchxSim(1, verbose=TRUE) is now a matrix
+
+
+Version 1.2 (23 January 2021):
+==============================
+
+* fix: the initial.values argument in garchx() can now be non-NULL
+
+
+Version 1.1 (10 May 2020):
+==========================
+
+* garchx:
+- c.code argument: new default TRUE
+- new argument: vcov.type
+- for consistency with the garch() function in the 'tseries' package, the arch and garch orders changed place in the order argument, i.e. order[1] now refers to the garch order, and order[2] now refers to the arch order
+- the 'verbose' argument (w/default TRUE) has been renamed to 'turbo' (w/default FALSE)
+
+* garchxRecursion: improved speed when the garch order is 1 or greater, since the function now uses compiled c-code for the recursion
+
+* garchxAvar: new function, computes the asymptotic coefficient-covariance of a model by simulation
+
+* garchxObjective: minor changes for improved numerical robustness
+
+* vcov.garchx: new argument vcov.type
+
+* fitted.garchx: new argument as.zoo (logical)
+
+* residuals.garchx: new argument as.zoo (logical)
+
+* new functions:
+- nobs.garchx
+- predict.garchx
+- quantile.garchx
+- toLatex.garchx
+- ttest0
+- rmnorm
+- waldtest0
+
+* fixes:
+ - garchxSim: now works when the asym order is greater than 1
+ - vcov.garchx: now works when verbose/turbo=FALSE in the garchx object it is applied to
+ - print.garchx: now works when verbose/turbo=FALSE in the garchx object it is applied to
+
+
+Version 1.0 (7 April 2020):
+===========================
+
+First version. The version numbering '1.0' means the release is considered to be fairly stable and well-tested.
