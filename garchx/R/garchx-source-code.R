@@ -9,8 +9,9 @@
 ## ADD more densities
 ## ADD power unequal to 2
 ##        
-## 1 load libraries, startup message, compile C-code
+## 1 load libraries, compile C-code, create generics
 ##   GARCHRECURSION      #c-code recursion
+##   refit               #generic for S3 methods
 ##
 ## 2 main garchx functions:
 ##   garchxSim           #simulate
@@ -28,12 +29,14 @@
 ##   print.garchx
 ##   quantile.garchx
 ##   residuals.garchx
+##   refit.garchx
 ##   toLatex.garchx
 ##   vcov.garchx
 ##
 ## 4 additional functions:
 ##   glag      #lag variable 
 ##   gdiff     #diff variable
+##   refit     #generic for S3 methods
 ##   rmnorm    #draw from multivariate normal
 ##   ttest0    #t-test under nullity
 ##   waldtest0 #wald-test under nullity
@@ -45,37 +48,17 @@
 ## 1 LOAD LIBRARIES, STARTUP MESSAGE, COMPILE C-CODE
 ####################################################
 
-##load libraries
-##==============
+##load required libraries
+##=======================
 
 library(zoo)
-#library(inline) ##needed under development-mode
 
-##for testing purposes (pre-package build):
-##=========================================
-
-###startup message/code contained in the file
-###garchx-internal.R (./garchx-devel/R folder):
-#txt <- c("\n",
-#  paste(sQuote("garchx"), "version 1.2\n"),
-#  "\n",
-#  paste0("Flexible and Robust GARCH-X modelling"),
-#  "\n",
-#  paste("CRAN website: https://CRAN.R-project.org/package=garchx"),
-#  paste("Github (issues, discussions): https://github.com/gsucarrat/garchx"),
-#  "\n")
+###C-code (for development-mode):
+###===============================
 #
-###print message:
-#if(interactive() || getOption("verbose")){
-#  packageStartupMessage(paste(strwrap(txt, indent = 2,
-#    exdent = 4), collapse = "\n"))
-#}
-#
-###remove txt from global environment:
-#rm(txt) 
-
-###C-code (for development-mode): garchx recursion
 #library(inline)
+#
+###garch recursion:
 #mysig <- signature(iStart="integer", iEnd="integer",
 #  iGARCHorder="integer", sigma2="numeric", parsgarch="numeric",
 #  innov="numeric")
@@ -97,6 +80,63 @@ library(zoo)
 #"
 #GARCHXRECURSION <- cfunction(mysig, mycode, convention=".C") #compile
 #rm("mysig", "mycode")
+#
+##garch recursion for simulations:
+#mysig <- signature(iStart="integer", iEnd="integer",
+#  iARCHorder="integer", iGARCHorder="integer", iASYMorder="integer",
+#  parsarch="numeric", parsgarch="numeric", parsasym="numeric",
+#  sigma2="numeric", z2="numeric", Ineg="numeric", xregsum="numeric")
+#mycode <- "
+#
+#  double archsum;
+#  double garchsum;
+#  double asymsum;
+#  
+#  archsum = 0;
+#  garchsum = 0;
+#  asymsum = 0;
+#
+#  for(int i=*iStart; i < *iEnd; i++){
+#
+#    /* ARCH sum */
+#    if(iARCHorder > 0){
+#      archsum = 0;
+#      for(int j=0; j < *iARCHorder; j++){
+#        archsum = archsum + parsarch[j] * z2[i-1-j] * sigma2[i-1-j];
+#      }
+#    }
+#
+#    /* GARCH sum */
+#    if(iGARCHorder > 0){
+#      garchsum = 0;
+#      for(int j=0; j < *iGARCHorder; j++){
+#        garchsum = garchsum + parsgarch[j] * sigma2[i-1-j];
+#      }
+#    }
+#    
+#    /* ASYM sum */
+#    if(iASYMorder > 0){
+#      asymsum = 0;
+#      for(int j=0; j < *iASYMorder; j++){
+#        asymsum = asymsum + parsasym[j] * Ineg[i-1-j] * z2[i-1-j] * sigma2[i-1-j];
+#      }
+#    }
+#    
+#    /*recursion:*/
+#    sigma2[i] = archsum + garchsum + asymsum + xregsum[i];
+#	
+#	} /* close for loop */
+#
+#}
+#"
+#GARCHXRECURSIONSIM <- cfunction(mysig, mycode, convention=".C") #compile
+#rm("mysig", "mycode")
+
+##create generics:
+##================
+
+##S3 generic/method 'refit':
+refit <- function(object, ...){ UseMethod("refit") }
 
 
 ####################################################
@@ -104,44 +144,44 @@ library(zoo)
 ####################################################
 
 ##==================================================
-## simulate from garch(1,1)
-garchxSim <- function(n, intercept=0.2, arch=0.1, garch=0.8,
-  asym=NULL, xreg=NULL, innovations=NULL, backcast.values=list(),
-  verbose=FALSE, as.zoo=TRUE)
+## simulate from garch-x model:
+garchxSim <- function(n, intercept=0.2, arch=0.1, garch=0.8, asym=NULL,
+  xreg=NULL, innovations=NULL, backcast.values=list(), verbose=FALSE,
+  as.zoo=TRUE, c.code=TRUE)
 {
   ##orders:
   archOrder <- length(arch)
   garchOrder <- length(garch)
   asymOrder <- length(asym)
-  maxOrder <- max(archOrder, garchOrder, asymOrder)  
-  
+  maxOrder <- max(archOrder, garchOrder, asymOrder)
+
   ##initiate:
   if(is.null(innovations)){ innovations <- rnorm(n) }
   z2 <- innovations^2
   Ineg <- as.numeric(innovations < 0)
   sigma2 <- rep(0,n)
   if(is.null(xreg)){ xreg <- rep(0,n) }
-  
+
   ##backcast values
   ##===============
   if(maxOrder > 0){
 
-    ##innovations, Ineg, z2:
+    ##innovations:
     if(is.null(backcast.values$innovations)){
-      backcast.values$innovations <- rep(0, maxOrder) 
+      backcast.values$innovations <- rep(0, maxOrder)
     }
     innovations <- c(backcast.values$innovations, innovations)
-    
+
     ##z2:
     if(is.null(backcast.values$z2)){
       z2mean <- mean(z2)
-      backcast.values$z2 <- rep(z2mean, maxOrder) 
+      backcast.values$z2 <- rep(z2mean, maxOrder)
     }
     z2 <- c(backcast.values$z2, z2)
 
     ##Ineg:
     if(is.null(backcast.values$Ineg)){
-      backcast.values$Ineg <- rep(0, maxOrder) 
+      backcast.values$Ineg <- rep(0, maxOrder)
     }
     Ineg <- c(backcast.values$Ineg, Ineg)
 
@@ -149,54 +189,77 @@ garchxSim <- function(n, intercept=0.2, arch=0.1, garch=0.8,
     if(is.null(backcast.values$sigma2)){
       Esigma2 <- intercept/(1-sum(arch)-sum(garch))
       if( abs(Esigma2)==Inf ){ stop("Initial values of sigma2 are not finite") }
-      backcast.values$sigma2 <- rep(Esigma2, maxOrder) 
+      backcast.values$sigma2 <- rep(Esigma2, maxOrder)
     }
     sigma2 <- c(backcast.values$sigma2, sigma2)
 
     ##xreg:
     if(is.null(backcast.values$xreg)){
       xregmean <- mean(xreg)
-      backcast.values$xreg <- rep(xregmean, maxOrder) 
+      backcast.values$xreg <- rep(xregmean, maxOrder)
     }
     xreg <- c(backcast.values$xreg, xreg)
-    
+
   }
 
   ##recursion
   ##=========
-  
   xregsum <- intercept + xreg
-  archsum <- garchsum <- asymsum <- 0
-  for(i in c(1+maxOrder):length(sigma2) ){
 
-    if(archOrder > 0){
-      archsum <-
-        sum(arch*z2[c(i-1):c(i-archOrder)]*sigma2[c(i-1):c(i-archOrder)])
-    }
+  if( c.code ){
 
-    if(garchOrder > 0){
-      garchsum <- sum(garch*sigma2[c(i-1):c(i-garchOrder)])
-    }
+    if( archOrder==0 ){ arch <- 0 }
+    if( garchOrder==0 ){ garch <- 0 }
+    if( asymOrder==0 ){ asym <- 0 }
+    
+#    ##development version (w/inline package):
+#    tmp <- GARCHXRECURSIONSIM(as.integer(maxOrder), as.integer(length(sigma2)),
+#      as.integer(archOrder), as.integer(garchOrder), as.integer(asymOrder),
+#      as.numeric(arch), as.numeric(garch), as.numeric(asym),
+#      as.numeric(sigma2), as.numeric(z2), as.numeric(Ineg),
+#      as.numeric(xregsum))
 
-    if(asymOrder > 0){
-      asymsum <- sum(asym*Ineg[c(i-1):c(i-asymOrder)]*z2[c(i-1):c(i-asymOrder)]*sigma2[c(i-1):c(i-asymOrder)])
-    }
+    ##package version:
+    tmp <- .C("GARCHXRECURSIONSIM", iStart=as.integer(maxOrder),
+      iEnd=as.integer(length(sigma2)), iARCHorder=as.integer(archOrder),
+      iGARCHorder=as.integer(garchOrder), iASYMorder=as.integer(asymOrder),
+      parsarch=as.double(arch), parsgarch=as.double(garch),
+      parsasym=as.double(asym), sigma2=as.double(sigma2),
+      z2=as.double(z2), Ineg=as.double(Ineg), xregsum=as.double(xregsum),
+      PACKAGE = "garchx")
 
-    sigma2[i] <- archsum + garchsum + asymsum + xregsum[i]
+    ##sigma2:
+    sigma2 <- tmp$sigma2
 
-  }
+  }else{
 
+    archsum <- garchsum <- asymsum <- 0
+    for(i in c(1+maxOrder):length(sigma2) ){
+      if(archOrder > 0){
+        archsum <-
+          sum(arch*z2[c(i-1):c(i-archOrder)]*sigma2[c(i-1):c(i-archOrder)])
+      }
+      if(garchOrder > 0){
+        garchsum <- sum(garch*sigma2[c(i-1):c(i-garchOrder)])
+      }
+      if(asymOrder > 0){
+        asymsum <- sum(asym*Ineg[c(i-1):c(i-asymOrder)]*z2[c(i-1):c(i-asymOrder)]*sigma2[c(i-1):c(i-asymOrder)])
+      }
+      sigma2[i] <- archsum + garchsum + asymsum + xregsum[i]
+    } #end for-loop
+
+  } #end if( c.code )
 
   ##prepare result
   ##==============
-  
+
   if(verbose){
     sigma <- sqrt(sigma2)
     y <- sigma*innovations
     result <- cbind(y, sigma, sigma2, Ineg, innovations)
     if(maxOrder > 0){ result <- result[-c(1:maxOrder),] }
     ##ensure result is a matrix when n=1:
-    if(n==1){ 
+    if(n==1){
       result <- rbind(result)
       rownames(result) <- NULL
     }
@@ -208,7 +271,7 @@ garchxSim <- function(n, intercept=0.2, arch=0.1, garch=0.8,
 
   ##return result
   ##=============
-  
+
   if(as.zoo){ result <- as.zoo(result) }
   return(result)
 
@@ -530,7 +593,7 @@ garchxRecursion <- function(pars, aux)
     ##if(c.code):
     if(aux$c.code){
 
-#      ##development version:
+#      ##development version (w/inline package):
 #      tmp <- GARCHXRECURSION(as.integer(aux$garchOrder),
 #        as.integer(aux$recursion.n), as.integer(aux$garchOrder),
 #        as.numeric(sigma2), as.numeric(parsgarch),
@@ -1105,6 +1168,45 @@ quantile.garchx <- function(x, probs=0.025, names=TRUE,
 }
 
 ##==================================================
+## refit to new data:
+refit.garchx <- function(object, newy=NULL, newxreg=NULL,
+  backcast.value=NULL, reestimate=FALSE, ...)
+{
+  ##check:
+  if( is.null(newy)){ stop("'newy' cannot be NULL") }
+  if( !is.null(object$xreg) && is.null(newxreg) ){
+    stop("'newxreg' is missing")
+  }
+  
+  ##obtain garch spec:    
+  archArg <- object$arch
+  garchArg <- object$garch 
+  asymArg <- object$asym
+
+  ##refit:
+  if(reestimate){
+    result <- garchx(newy, arch=archArg, garch=garchArg, asym=asymArg,
+      xreg=newxreg, backcast.values=backcast.value, ...)
+  }else{
+    coefs <- coef.garchx(object)
+    result <- garchx(newy, arch=archArg, garch=garchArg, asym=asymArg,
+      xreg=newxreg, initial.values=coefs, backcast.values=backcast.value,
+      estimate=FALSE, turbo=TRUE)
+    result$convergence <- NA
+    result$iterations <- NA
+    result$evaluations <- NA
+    result$message <- "not applicable, since 'reestimate = FALSE'"
+    result$fitted <- fitted.garchx(result)
+    result$residuals <- residuals.garchx(result)
+    result$hessian <- object$hessian
+    result$vcov <- object$vcov
+  }
+    
+  ##return result:
+  return(result)
+}
+
+##==================================================
 ## extract residuals:
 residuals.garchx <- function(object, as.zoo=TRUE, ...){
   if(is.null(object$residuals)){
@@ -1365,7 +1467,6 @@ glag <- function(x, k=1, pad=TRUE, pad.value=NA)
   #out:
   return(xlagged)
 } #end glag
-
 
 ##==================================================
 ## simulate random vectors from multivariate normal;

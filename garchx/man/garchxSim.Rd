@@ -9,7 +9,8 @@ Simulate from a GARCH(p,q,r)-X model. Optionally, if \code{verbose=TRUE}, the co
 
 \usage{
 garchxSim(n, intercept = 0.2, arch = 0.1, garch = 0.8, asym = NULL, xreg = NULL,
-  innovations = NULL, backcast.values = list(), verbose = FALSE, as.zoo = TRUE)
+  innovations = NULL, backcast.values = list(), verbose = FALSE, as.zoo = TRUE,
+  c.code = TRUE)
 }
 
 \arguments{
@@ -23,6 +24,7 @@ garchxSim(n, intercept = 0.2, arch = 0.1, garch = 0.8, asym = NULL, xreg = NULL,
   \item{backcast.values}{\code{\link{list}} with backcast values}
   \item{verbose}{\code{logical}}
   \item{as.zoo}{\code{logical}. If \code{TRUE} (default), then the returned object is of class \code{\link{zoo}}}
+  \item{c.code}{\code{logical}. If \code{TRUE} (default), then compiled C code is used for the recursion (faster). Otherwise R code is used (slower)}
 }
 
 \value{
