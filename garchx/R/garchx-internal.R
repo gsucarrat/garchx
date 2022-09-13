@@ -1,7 +1,7 @@
 .onAttach <- function(libname, pkgname)
 {
 txt <- c("\n",
-  paste(sQuote("garchx"), "version 1.4\n"),
+  paste(sQuote("garchx"), "version 1.5\n"),
   "\n",
   paste0("Flexible and Robust GARCH-X modelling"),
   "\n",

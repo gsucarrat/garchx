@@ -1260,7 +1260,7 @@ toLatex.garchx <- function(object, digits=4, ...)
   ##print code:
   ##-----------
 
-  cat("%% the model was estimated ", object$date, "\n")
+  cat("%% the model was estimated", object$date, "\n")
   cat("%% note: the 'eqnarray' environment requires the 'amsmath' package\n")
   cat("\\begin{eqnarray}\n")
   cat(eqtxt)

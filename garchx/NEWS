@@ -1,7 +1,11 @@
-Version 1.4 (13 September 2022):
+Version 1.5 (13 September 2022):
 ================================
 
+* version 1.4 did not pass the CRAN checks
+
 * garchxSim(): new argument 'c.code'
+
+* recursions.c: to avoid the 'ordered comparison of pointer with integer zero' warning, integer comparisons were modified to !=
 
 * new function: refit.garchx(), in response to a suggestion by Viatalie Spinu, see https://github.com/gsucarrat/garchx/issues/3
 
@@ -76,4 +80,4 @@ Version 1.1 (10 May 2020):
 Version 1.0 (7 April 2020):
 ===========================
 
-First version. The version numbering '1.0' means the release is considered to be fairly stable and well-tested.
+* Package released on CRAN, the version numbering '1.0' means the release is considered to be fairly stable and well-tested

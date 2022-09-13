@@ -33,7 +33,7 @@ void GARCHXRECURSIONSIM(int * iStart, int * iEnd, int * iARCHorder, int * iGARCH
   for(int i=*iStart; i < *iEnd; i++){
 
     /* ARCH sum */
-    if(iARCHorder > 0){
+    if(iARCHorder != 0){
       archsum = 0;
       for(int j=0; j < *iARCHorder; j++){
         archsum = archsum + parsarch[j] * z2[i-1-j] * sigma2[i-1-j];
@@ -41,7 +41,7 @@ void GARCHXRECURSIONSIM(int * iStart, int * iEnd, int * iARCHorder, int * iGARCH
     }
 
     /* GARCH sum */
-    if(iGARCHorder > 0){
+    if(iGARCHorder != 0){
       garchsum = 0;
       for(int j=0; j < *iGARCHorder; j++){
         garchsum = garchsum + parsgarch[j] * sigma2[i-1-j];
@@ -49,7 +49,7 @@ void GARCHXRECURSIONSIM(int * iStart, int * iEnd, int * iARCHorder, int * iGARCH
     }
     
     /* ASYM sum */
-    if(iASYMorder > 0){
+    if(iASYMorder != 0){
       asymsum = 0;
       for(int j=0; j < *iASYMorder; j++){
         asymsum = asymsum + parsasym[j] * Ineg[i-1-j] * z2[i-1-j] * sigma2[i-1-j];
