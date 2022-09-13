@@ -6,8 +6,8 @@
 ##
 ## ADD nobs and nonumber arguments to toLatex.garchx?
 ## ADD CHRISTOPHERSEN TEST?
-## ADD more densities
-## ADD power unequal to 2
+## ADD more densities?
+## ADD power unequal to 2?
 ##        
 ## 1 load libraries, compile C-code, create generics
 ##   GARCHRECURSION      #c-code recursion
@@ -545,7 +545,6 @@ garchxAvar <- function(pars, arch=NULL, garch=NULL, asym=NULL,
   return(result)
 
 } #close
-
 
 
 ##==================================================
@@ -1261,8 +1260,8 @@ toLatex.garchx <- function(object, digits=4, ...)
   ##print code:
   ##-----------
 
-  cat("%%note: the 'eqnarray' environment requires the 'amsmath' package\n")
-  cat("%%the model was estimated:", object$date, "\n")
+  cat("%% the model was estimated ", object$date, "\n")
+  cat("%% note: the 'eqnarray' environment requires the 'amsmath' package\n")
   cat("\\begin{eqnarray}\n")
   cat(eqtxt)
   cat(goftxt)
@@ -1489,7 +1488,10 @@ rmnorm <- function (n, mean = NULL, vcov = 1)
 ## extract variance-covariance matrix:
 ttest0 <- function(x, k=NULL)
 {
-  if(class(x)!="garchx"){ stop("'x' not of class 'garchx'") }
+
+  if( !is(x, "garchx") ){ stop("'x' not of class 'garchx'") }
+##OLD:
+##  if(class(x)!="garchx"){ stop("'x' not of class 'garchx'") }
   
   ##prepare:
   coefs <- coef.garchx(x)
@@ -1530,7 +1532,9 @@ ttest0 <- function(x, k=NULL)
 waldtest0 <- function(x, r=0, R=NULL, level=c(0.1,0.05,0.01),
   vcov.type=NULL, quantile.type=7, n=20000)
 {
-  if(class(x)!="garchx"){ stop("'x' not of class 'garchx'") }
+  if( !is(x, "garchx") ){ stop("'x' not of class 'garchx'") }
+##OLD:
+##  if(class(x)!="garchx"){ stop("'x' not of class 'garchx'") }
   
   ##coefs:
   coefs <- as.numeric(coef.garchx(x))

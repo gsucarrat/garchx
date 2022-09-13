@@ -4,7 +4,7 @@
 \title{Simulate from a GARCH-X model}
 
 \description{
-Simulate from a GARCH(p,q,r)-X model. Optionally, if \code{verbose=TRUE}, the conditional variance and innovations are also returned.
+Simulate from a GARCH(q,p,r)-X model. Optionally, if \code{verbose=TRUE}, the conditional variance and innovations are also returned.
 }
 
 \usage{

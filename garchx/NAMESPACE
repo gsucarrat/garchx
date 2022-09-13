@@ -3,6 +3,7 @@ useDynLib("garchx")
 
 ## import:
 import("zoo")
+importFrom("methods", "is")
 importFrom("stats", "coef", "dnorm", "fitted", "logLik", "nlminb", "nobs", "numericDeriv", "optimHess", "pnorm", "quantile", "residuals", "rnorm", "runif", "predict", "vcov", "window")
 importFrom("utils", "toLatex", "tail")
 

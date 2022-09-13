@@ -4,7 +4,7 @@
 \title{Estimate a GARCH-X model}
 
 \description{
-Quasi Maximum Likelihood (ML) estimation of a GARCH(p,q,r)-X model, where p is the ARCH order, q is the GARCH order, r is the asymmetry (or leverage) order and 'X' indicates that covariates can be included. Note that the underlying estimation theory assumes the covariates are stochastic. The estimation procedure will, in general, provide consistent estimates when the standardised innovations are not normal or independent (or both), see Francq and Thieu (2018). 
+Quasi Maximum Likelihood (ML) estimation of a GARCH(q,p,r)-X model, where q is the GARCH order, p is the ARCH order, r is the asymmetry (or leverage) order and 'X' indicates that covariates can be included. Note that the underlying estimation theory assumes the covariates are stochastic. The estimation procedure will, in general, provide consistent estimates when the standardised innovations are not normal or independent (or both), see Francq and Thieu (2018). 
 }
 
 \usage{

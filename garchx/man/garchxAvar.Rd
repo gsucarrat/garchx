@@ -3,7 +3,7 @@
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Asymptotic Coefficient Covariance}
 
-\description{Compute the asymptotic coefficient-covariance of a GARCH(p,q,r)-X model by simulation. Note that the principles of how to use the \code{arch}, \code{garch}, \code{asym} and \code{xreg} arguments are the same as those of \code{\link{garchx}} }
+\description{Compute the asymptotic coefficient-covariance of a GARCH(q,p,r)-X model by simulation. Note that the principles of how to use the \code{arch}, \code{garch}, \code{asym} and \code{xreg} arguments are the same as those of \code{\link{garchx}} }
 
 \usage{garchxAvar(pars, arch = NULL, garch = NULL, asym = NULL,
   xreg = NULL, vcov.type = c("ordinary", "robust"),

@@ -5,7 +5,7 @@
 \title{T-tests and Wald-tests under nullity}
 
 \description{
-The permissible parameter-space of GARCH-models is bounded from below by 0. This means non-standard inference is required when one or more parameters are 0 under the null hypothesis. The functions \code{ttest0} and \code{waldtest0} perform t-tests and Wald-tests when one or more parameters is 0. In the latter test, the Wald-test, the critical values are obtained by simulation, see Francq and Thieu (2018).
+The permissible parameter-space of GARCH-models is bounded from below by 0. This means non-standard inference is required when one or more parameters are 0 under the null hypothesis, a frequent situation in empirical applications. The functions \code{ttest0} and \code{waldtest0} perform t-tests and Wald-tests when one or more parameters is 0. In the latter test, the Wald-test, the critical values are obtained by simulation, see Francq and Thieu (2018).
 }
 
 \usage{
