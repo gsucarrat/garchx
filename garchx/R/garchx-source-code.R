@@ -281,7 +281,7 @@ garchxSim <- function(n, intercept=0.2, arch=0.1, garch=0.8, asym=NULL,
 ##==================================================
 ## asymptotic coefficient-covariance
 garchxAvar <- function(pars, arch=NULL, garch=NULL, asym=NULL,
-  xreg=NULL, vcov.type=c("ordinary", "robust"),  innovations=NULL,
+  xreg=NULL, vcov.type=c("ordinary", "robust", "hac"),  innovations=NULL,
   Eeta4=NULL, n=1000000, objective.fun=1, seed=NULL)
 {
   ##arguments
@@ -291,10 +291,10 @@ garchxAvar <- function(pars, arch=NULL, garch=NULL, asym=NULL,
   if( length(pars)==0 ){ stop("length(pars) cannot be 0") }
 
   ##vcov.type:
-  types <- c("ordinary", "robust")
+  types <- c("ordinary", "robust", "hac")
   whichType <- charmatch(vcov.type[1], types)
   vcov.type <- types[whichType]
-  if( vcov.type=="robust"){ stop("Sorry, not implemented yet!") }
+  if( vcov.type %in% c("robust","hac") ){ stop("Sorry, not implemented yet!") }
 
   ##initiate
   ##--------
@@ -540,6 +540,12 @@ garchxAvar <- function(pars, arch=NULL, garch=NULL, asym=NULL,
     ##tba
   }
 
+  ##hac vcov
+  ##-----------
+  if( vcov.type=="hac" ){
+    ##tba
+  }
+
   ##return
   ##------
   return(result)
@@ -684,7 +690,7 @@ garchxObjective <- function(pars, aux)
 ##==================================================
 ## estimate garch
 garchx <- function(y, order=c(1,1), arch=NULL, garch=NULL, asym=NULL,
-  xreg=NULL, vcov.type=c("ordinary","robust"), initial.values=NULL,
+  xreg=NULL, vcov.type=c("ordinary","robust","hac"), initial.values=NULL,
   backcast.values=NULL, lower=0, upper=+Inf, control=list(),
   hessian.control=list(), solve.tol=.Machine$double.eps, estimate=TRUE,
   c.code=TRUE, penalty.value=NULL, sigma2.min=.Machine$double.eps,
@@ -976,7 +982,7 @@ garchx <- function(y, order=c(1,1), arch=NULL, garch=NULL, asym=NULL,
   class(aux) <- "garchx"
   return(aux)
 
-} ##close garchx function
+} ##close garchx() function
 
 
 ####################################################
@@ -986,6 +992,40 @@ garchx <- function(y, order=c(1,1), arch=NULL, garch=NULL, asym=NULL,
 ##==================================================
 ## extract coefficients
 coef.garchx <- function(object, ...){ return(object$par) }
+
+##==================================================
+## compute confidence intervals of parameters
+confint.garchx <- function(object, parm, level = 0.95, ...)
+{
+  ##the code of this function is based on and almost identical
+  ##to that of confint.default()
+
+  cf <- coef(object)
+  pnames <- names(cf)
+  if (missing(parm)) 
+      parm <- pnames
+  else if (is.numeric(parm)) 
+      parm <- pnames[parm]
+  a <- (1 - level)/2
+  a <- c(a, 1 - a)
+  
+  ##lower and upper names:
+  lowerName <- paste0(a[1]*100, " %")
+  upperName <- paste0(a[2]*100, " %")
+  pct <- c(lowerName, upperName)
+  
+  ##compute limits:
+  iDF <- nobs.garchx(object) - length(coef.garchx(object))
+  fac <- qt(a, df=iDF)
+  ci <- array(NA, dim = c(length(parm), 2L), dimnames = list(parm, 
+      pct))
+  ses <- sqrt(diag(vcov(object)))[parm]
+  ci[] <- cf[parm] + ses %o% fac
+  
+  ##return result:
+  return(ci)
+
+} #close confint.garchx()
 
 ##==================================================
 ## extract fitted values
@@ -1283,7 +1323,7 @@ vcov.garchx <- function(object, vcov.type=NULL, ...)
 
   ##determine vcov.type
   ##-------------------
-  vcovTypes <- c("ordinary", "robust")
+  vcovTypes <- c("ordinary", "robust", "hac")
   if( is.null(vcov.type) ){
     sysCall <- as.list(object$sys.call)
     if( "vcov.type" %in% names(sysCall) ){
@@ -1325,8 +1365,8 @@ vcov.garchx <- function(object, vcov.type=NULL, ...)
 
   } #close if(ordinary)
         
-  ##robust vcov
-  ##------------
+  ##"robust" vcov
+  ##-------------
   if( vcov.type=="robust" && vcovComment!="robust" ){
 
     ##inverse of J:
@@ -1367,6 +1407,62 @@ vcov.garchx <- function(object, vcov.type=NULL, ...)
 
   } #close if("robust")
     
+  ##"hac" vcov
+  ##----------
+  if( vcov.type=="hac" && vcovComment!="hac" ){
+
+    ##inverse of J:
+    Jinv <- solve(object$hessian, tol=object$solve.tol)
+    
+    ##temporary function:
+    ##(to be used to compute the derivatives of sigma2 at i)
+    funtmp <- function(i, pars){
+      object$recursion.n <- i
+      object$par <- pars
+      sigma2 <- garchxRecursion(as.numeric(object$par), object)
+      return(sigma2[i])
+    }
+
+    ##make mldot: matrix w/gradients of sigma2
+    pars <- as.numeric(object$par)
+    mldot <- matrix(NA, object$y.n, length(object$par))
+    for(i in 1:object$y.n){
+      mldot[i,] <-
+        attr(numericDeriv(quote(funtmp(i,pars)),"pars"), "gradient")
+    }
+
+    ##make mShat: matrix w/gradients of lhat
+    sigma2 <- garchxRecursion(as.numeric(object$par), object)
+    etahatadj <- object$y2/(sigma2^2)
+    mShat <- (1/sigma2 - etahatadj) * mldot #matrix w/gradients of lhat
+
+    ##bandwidth:
+    igamma_n <- 4*(object$y.n/100)^(2/9) #bandwidth
+    ##maximum lag:
+    iL <- floor(igamma_n) #note: j/iS_T > 1 when j > i
+    ##Bartlett weights:
+    vW <- 1 - 1:iL/igamma_n #Hansen (1992)
+
+    ##compute mJhat:
+    iT <- NROW(mShat) #for more compact notation
+    mIhat <- crossprod(mShat)/iT  #(j=0)
+    if( iL > 0 ){
+      for(j in 1:iL){
+        mS0 <- cbind(mShat[-c(1:j),])
+        mSj <- cbind(mShat[-c(c(iT-j+1):iT),])
+        mGhatj1 <- crossprod(mS0,mSj)/iT #divide by (iT-j) instead?
+        mGhatj2 <- crossprod(mSj,mS0)/iT #divide by (iT-j) instead?
+        mIhat <- mIhat + vW[j] * (mGhatj1 + mGhatj2)
+      }
+    }
+
+    ##vcov:
+    iN <- length(object$residuals) #divide by n for finite sample version
+    object$vcov <- (Jinv %*% mIhat %*% Jinv)/iN
+    comment(object$vcov) <- "hac"
+    
+  } #close if("hac")
+
   ##return
   ##------
   return(object$vcov) 
@@ -1485,20 +1581,20 @@ rmnorm <- function (n, mean = NULL, vcov = 1)
 
 
 ##==================================================
-## extract variance-covariance matrix:
+## perform t-tests under nullity:
 ttest0 <- function(x, k=NULL)
 {
+  ##based on Francq and Thieu (2019), pp. 49-50
 
+  ##check if class is correct:
   if( !is(x, "garchx") ){ stop("'x' not of class 'garchx'") }
-##OLD:
-##  if(class(x)!="garchx"){ stop("'x' not of class 'garchx'") }
   
   ##prepare:
   coefs <- coef.garchx(x)
   coefsNames <- names(coefs)
   n <- length(coefs)
   if(is.null(k)){ k <- 2:n }
-  mSigmahat <- vcov.garchx(x)
+  mSigmahat <- vcov.garchx(x) #in fact, mSigmahat/T
   
   ##make matrix w/tests:
   result <- matrix(NA, length(k), 4)
@@ -1514,6 +1610,8 @@ ttest0 <- function(x, k=NULL)
     stderror <-
       as.numeric(sqrt( rbind(evector) %*% mSigmahat %*% cbind(evector) ))
     statistic <- coefs[k[i]]/stderror
+    #note: multiplication by sqrt(T) not needed,
+    #since mSigmahat = mSigmahat/n
     
     result[i,"std.error"] <- stderror
     result[i,"t-stat"] <- statistic
@@ -1528,7 +1626,7 @@ ttest0 <- function(x, k=NULL)
 
 
 ##==================================================
-## perform waldtest
+## perform waldtest under nullity:
 waldtest0 <- function(x, r=0, R=NULL, level=c(0.1,0.05,0.01),
   vcov.type=NULL, quantile.type=7, n=20000)
 {

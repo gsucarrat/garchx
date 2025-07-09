@@ -1,11 +1,12 @@
 Package: garchx
 Type: Package
 Title: Flexible and Robust GARCH-X Modelling
-Version: 1.5
-Date: 2022-09-13
-Author: Genaro Sucarrat [aut, cre]
+Version: 1.6
+Date: 2025-07-09
+Authors@R: person(given = "Genaro", family = "Sucarrat", role = c("aut", "cre"), email = "gsucarrat@gmail.com", comment = c(ORCID = "0000-0002-8433-837X"))
+Author: Genaro Sucarrat [aut, cre] (<https://orcid.org/0000-0002-8433-837X>)
 Maintainer: Genaro Sucarrat <gsucarrat@gmail.com>
-Description: Flexible and robust estimation and inference of generalised autoregressive conditional heteroscedasticity (GARCH) models with covariates ('X') based on the results by Francq and Thieu (2018) <doi:10.1017/S0266466617000512>. Coefficients can straightforwardly be set to zero by omission, and quasi maximum likelihood methods ensure estimates are generally consistent and inference valid, even when the standardised innovations are non-normal and/or dependent over time, see <https://journal.r-project.org/archive/2021/RJ-2021-057/RJ-2021-057.pdf> for an overview of the package.
+Description: Flexible and robust estimation and inference of Generalised Autoregressive Conditional Heteroscedasticity (GARCH) models with covariates ('X') based on the results by Francq and Thieu (2019) <doi:10.1017/S0266466617000512>. Coefficients can straightforwardly be set to zero by omission, and quasi maximum likelihood methods ensure estimates are generally consistent and inference valid, even when the standardised innovations are non-normal and/or dependent over time. See <doi:10.32614/RJ-2021-057> for an overview of the package.
 License: GPL (>= 2)
 Depends: R (>= 3.4.0), methods, zoo
 Suggests: tvgarch, lgarch

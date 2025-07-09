@@ -31,7 +31,7 @@ refit(object, ...)
 \code{refit.garchx} is a convenience function to facilitate cross-validation and related analyses. 
 }
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
+\author{Genaro Sucarrat, \url{https://www.sucarrat.net/}}
 
 \seealso{
 \code{\link{garchx}}

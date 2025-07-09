@@ -24,7 +24,7 @@ Auxiliary functions used in estimation. Not intended for the average user
 }
 
 \author{
-  Genaro Sucarrat, \url{http://www.sucarrat.net/}
+  Genaro Sucarrat, \url{https://www.sucarrat.net/}
 }
 
 \seealso{

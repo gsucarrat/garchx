@@ -22,7 +22,7 @@ This function is a speed-optimised version of the \code{\link{rmnorm}} function 
 Adelchi Azzalini (2013): 'mnormt: The multivariate normal and t distributions', R package version 1.4-7, \url{https://CRAN.R-project.org/package=mnormt}
 }
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
+\author{Genaro Sucarrat, \url{https://www.sucarrat.net/}}
 
 \examples{
 ##generate from univariate standardised normal:

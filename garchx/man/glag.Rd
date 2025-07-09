@@ -1,10 +1,10 @@
 \name{glag}
 \alias{glag}
 
-\title{ Lag a vector or a matrix, with special treatment of \code{\link{zoo}} objects}
+\title{ Lag a vector or a matrix, with special treatment of \code{\link[zoo]{zoo}} objects}
 
 \description{
-Similar to the \code{\link{lag}} function from the \code{stats} package, but \code{glag} enables padding (e.g. {NA}s or 0s) of the lost entries. Contrary to the \code{\link{lag}} function in the stats package, however, the default in \code{glag} is to pad (with \code{NA}s). The \code{glag} is particularly suited for \code{\link{zoo}} objects, since their indexing is retained
+Similar to the \code{\link{lag}} function from the \code{stats} package, but \code{glag} enables padding (e.g. \code{NA}s or 0s) of the lost entries. Contrary to the \code{\link{lag}} function in the stats package, however, the default in \code{glag} is to pad (with \code{NA}s). The \code{glag} is particularly suited for \code{\link[zoo]{zoo}} objects, since their indexing is retained
 }
 
 \usage{
@@ -20,7 +20,7 @@ glag(x, k = 1, pad = TRUE, pad.value = NA)
 
 \value{A vector or matrix with the lagged values}
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
+\author{Genaro Sucarrat, \url{https://www.sucarrat.net/}}
 
 \note{Empty}
 

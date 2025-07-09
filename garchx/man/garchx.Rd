@@ -9,7 +9,7 @@ Quasi Maximum Likelihood (ML) estimation of a GARCH(q,p,r)-X model, where q is t
 
 \usage{
 garchx(y, order = c(1,1), arch = NULL, garch = NULL, asym = NULL,
-  xreg = NULL, vcov.type = c("ordinary", "robust"),
+  xreg = NULL, vcov.type = c("ordinary", "robust", "hac"),
   initial.values = NULL, backcast.values = NULL, lower = 0,
   upper = +Inf, control = list(), hessian.control = list(),
   solve.tol = .Machine$double.eps, estimate = TRUE, c.code = TRUE,
@@ -18,13 +18,13 @@ garchx(y, order = c(1,1), arch = NULL, garch = NULL, asym = NULL,
 }
 
 \arguments{
-  \item{y}{numeric vector, time-series or \code{\link{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+  \item{y}{numeric vector, time-series or \code{\link[zoo]{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}}command }
   \item{order}{integer vector of length 1, 2 or 3, for example \code{c(1,1,1)}. The first entry controls the GARCH order, the second the ARCH order and the third the ASYM (asymmetry/leverage) order}
   \item{arch}{\code{NULL} or numeric vector containing the ARCH-terms to include. Note: If not \code{NULL}, then the value of the \code{ARCH} argument overrides the value of the first entry in the \code{order} argument}
   \item{garch}{\code{NULL} or numeric vector containing the GARCH-terms to include. Note: If not \code{NULL}, then the value of the \code{GARCH} argument overrides the value of the second entry in the \code{order} argument}
   \item{asym}{\code{NULL} or numeric vector containing the ASYM-terms (asymmetry/leverage terms) to include. Note: If not \code{NULL}, then the value of the \code{ASYM} argument overrides the value of the third entry in the \code{order} argument}
-  \item{xreg}{numeric vector, time-series or \code{\link{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
-  \item{vcov.type}{\code{character}, either \code{"ordinary"} or \code{"robust"}, see \code{\link{vcov.garchx}} }
+  \item{xreg}{numeric vector, time-series or \code{\link[zoo]{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}} command}
+  \item{vcov.type}{\code{character}, either \code{"ordinary"}, \code{"robust"} or \code{"hac"}. The robust coefficient-covariance (\code{"robust"}) is that of Francq and Thieu (2019). The Heteroscedasticity and Autocorrelation Consistent (\code{"hac"}) variance-covariance estimates the variance of the score (the 'meat') based on Theorem 2.2 in De Jong and Davidson (2000). For the details of the kernel weights (Bartlett) and bandwidth, see the code in the \code{\link{vcov.garchx}} function }
   \item{initial.values}{\code{NULL} or a numeric vector with the initial parameter values passed on to the optimisation routine, \code{\link{nlminb}}. If \code{NULL}, the default, then the values are chosen automatically}
   \item{backcast.values}{\code{NULL} or a non-negative numeric. The backcast value is used to initiate the forward recursion of the conditional variance. If \code{NULL} (default), then the value is chosen automatically (currently the average of \code{y} squared is used). If \code{backcast.values} is a non-negative numeric, then the initial recursion values are all set to this value}
   \item{lower}{numeric vector, either of length 1 or the number of parameters to be estimated, see \code{\link{nlminb}}}
@@ -43,11 +43,12 @@ garchx(y, order = c(1,1), arch = NULL, garch = NULL, asym = NULL,
 \value{A list of class 'garchx'}
 
 \references{
-Christian Francq and Le Quien Thieu (2018): 'QML inference for volatility models with covariates', Econometric Theory, doi:10.1017/S0266466617000512\cr
+Christian Francq and Le Quien Thieu (2019): 'QML inference for volatility models with covariates', Econometric Theory 35, pp. 37-72, \doi{10.1017/S0266466617000512}
 Christian Francq and Jean-Michel Zakoian (2019): 'GARCH Models', 2nd Edition, Wiley
+Robert M. de Jong and James Davidson (2000): 'Consistency of Kernel Estimators of Heteroscedastic and Autocorrelated Covariance Matrices', Econometrica 68, pp. 407-423
 }
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
+\author{Genaro Sucarrat, \url{https://www.sucarrat.net/}}
 
 \seealso{
 \code{\link{garchxSim}}, \code{\link{nlminb}}, \code{\link{optimHess}}, \code{\link{coef.garchx}}

@@ -41,7 +41,7 @@ Christian Francq and Le Quien Thieu (2018): 'QML inference for volatility models
 }
 
 \author{
-  Genaro Sucarrat, \url{http://www.sucarrat.net/}
+  Genaro Sucarrat, \url{https://www.sucarrat.net/}
 }
 
 \seealso{\code{\link{garchx}}, \code{\link{quantile}}, \code{\link{vcov.garchx}}, \code{\link{rmnorm}} }

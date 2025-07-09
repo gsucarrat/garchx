@@ -1,3 +1,13 @@
+Version 1.6 (9 July 2025):
+==========================
+
+* garchx(): new value "hac" on the vcov.type argument
+
+* vcov.garchx(): new value "hac" on the vcov.type argument
+
+* new function: confint.garchx()
+
+
 Version 1.5 (13 September 2022):
 ================================
 
@@ -44,37 +54,37 @@ Version 1.2 (23 January 2021):
 Version 1.1 (10 May 2020):
 ==========================
 
-* garchx:
+* garchx():
 - c.code argument: new default TRUE
 - new argument: vcov.type
 - for consistency with the garch() function in the 'tseries' package, the arch and garch orders changed place in the order argument, i.e. order[1] now refers to the garch order, and order[2] now refers to the arch order
 - the 'verbose' argument (w/default TRUE) has been renamed to 'turbo' (w/default FALSE)
 
-* garchxRecursion: improved speed when the garch order is 1 or greater, since the function now uses compiled c-code for the recursion
+* garchxRecursion(): improved speed when the garch order is 1 or greater, since the function now uses compiled c-code for the recursion
 
-* garchxAvar: new function, computes the asymptotic coefficient-covariance of a model by simulation
+* garchxAvar(): new function, computes the asymptotic coefficient-covariance of a model by simulation
 
-* garchxObjective: minor changes for improved numerical robustness
+* garchxObjective(): minor changes for improved numerical robustness
 
-* vcov.garchx: new argument vcov.type
+* vcov.garchx(): new argument vcov.type
 
-* fitted.garchx: new argument as.zoo (logical)
+* fitted.garchx(): new argument as.zoo (logical)
 
-* residuals.garchx: new argument as.zoo (logical)
+* residuals.garchx(): new argument as.zoo (logical)
 
 * new functions:
-- nobs.garchx
-- predict.garchx
-- quantile.garchx
-- toLatex.garchx
-- ttest0
-- rmnorm
-- waldtest0
+- nobs.garchx()
+- predict.garchx()
+- quantile.garchx()
+- toLatex.garchx()
+- ttest0()
+- rmnorm()
+- waldtest0()
 
 * fixes:
- - garchxSim: now works when the asym order is greater than 1
- - vcov.garchx: now works when verbose/turbo=FALSE in the garchx object it is applied to
- - print.garchx: now works when verbose/turbo=FALSE in the garchx object it is applied to
+ - garchxSim(): now works when the asym order is greater than 1
+ - vcov.garchx(): now works when verbose/turbo=FALSE in the garchx object it is applied to
+ - print.garchx(): now works when verbose/turbo=FALSE in the garchx object it is applied to
 
 
 Version 1.0 (7 April 2020):

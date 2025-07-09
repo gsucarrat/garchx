@@ -6,7 +6,7 @@
 \description{Compute the asymptotic coefficient-covariance of a GARCH(q,p,r)-X model by simulation. Note that the principles of how to use the \code{arch}, \code{garch}, \code{asym} and \code{xreg} arguments are the same as those of \code{\link{garchx}} }
 
 \usage{garchxAvar(pars, arch = NULL, garch = NULL, asym = NULL,
-  xreg = NULL, vcov.type = c("ordinary", "robust"),
+  xreg = NULL, vcov.type = c("ordinary", "robust", "hac"),
   innovations = NULL, Eeta4 = NULL, n = 1e+06, objective.fun = 1,
   seed = NULL)
 }
@@ -32,7 +32,7 @@ Christian Francq and Le Quien Thieu (2018): 'QML inference for volatility models
 Christian Francq and Jean-Michel Zakoian (2019): 'GARCH Models', 2nd Edition, Wiley
 }
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
+\author{Genaro Sucarrat, \url{https://www.sucarrat.net/}}
 
 \seealso{
 \code{\link{garchx}}, \code{\link{garchxSim}}, \code{\link{vcov.garchx}}

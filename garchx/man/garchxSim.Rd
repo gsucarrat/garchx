@@ -23,7 +23,7 @@ garchxSim(n, intercept = 0.2, arch = 0.1, garch = 0.8, asym = NULL, xreg = NULL,
   \item{innovations}{\code{NULL} or numeric vector with the innovations. If \code{NULL}, then standard normal innovations are generated with \code{\link{rnorm}}}
   \item{backcast.values}{\code{\link{list}} with backcast values}
   \item{verbose}{\code{logical}}
-  \item{as.zoo}{\code{logical}. If \code{TRUE} (default), then the returned object is of class \code{\link{zoo}}}
+  \item{as.zoo}{\code{logical}. If \code{TRUE} (default), then the returned object is of class \code{\link[zoo]{zoo}}}
   \item{c.code}{\code{logical}. If \code{TRUE} (default), then compiled C code is used for the recursion (faster). Otherwise R code is used (slower)}
 }
 
@@ -31,10 +31,10 @@ garchxSim(n, intercept = 0.2, arch = 0.1, garch = 0.8, asym = NULL, xreg = NULL,
 a numeric vector or matrix with the simulated values.
 }
 
-\author{Genaro Sucarrat, \url{http://www.sucarrat.net/}}
+\author{Genaro Sucarrat, \url{https://www.sucarrat.net/}}
 
 \seealso{
-\code{\link{garchx}}, \code{\link{zoo}}
+\code{\link{garchx}}, \code{\link[zoo]{zoo}}
 }
 
 \examples{
