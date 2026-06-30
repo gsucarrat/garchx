@@ -9,9 +9,9 @@ Quasi Maximum Likelihood (ML) estimation of a GARCH(q,p,r)-X model, where q is t
 
 \usage{
 garchx(y, order = c(1,1), arch = NULL, garch = NULL, asym = NULL,
-  xreg = NULL, vcov.type = c("ordinary", "robust", "hac"),
-  initial.values = NULL, backcast.values = NULL, lower = 0,
-  upper = +Inf, control = list(), hessian.control = list(),
+  xreg = NULL, vcov.type = c("ordinary", "robust", "hac"), bw = NULL,
+  kernel.weights = NULL, initial.values = NULL, backcast.values = NULL,
+  lower = 0, upper = +Inf, control = list(), hessian.control = list(),
   solve.tol = .Machine$double.eps, estimate = TRUE, c.code = TRUE,
   penalty.value = NULL, sigma2.min = .Machine$double.eps,
   objective.fun = 1, turbo = FALSE)
@@ -25,6 +25,8 @@ garchx(y, order = c(1,1), arch = NULL, garch = NULL, asym = NULL,
   \item{asym}{\code{NULL} or numeric vector containing the ASYM-terms (asymmetry/leverage terms) to include. Note: If not \code{NULL}, then the value of the \code{ASYM} argument overrides the value of the third entry in the \code{order} argument}
   \item{xreg}{numeric vector, time-series or \code{\link[zoo]{zoo}} object. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}} command}
   \item{vcov.type}{\code{character}, either \code{"ordinary"}, \code{"robust"} or \code{"hac"}. The robust coefficient-covariance (\code{"robust"}) is that of Francq and Thieu (2019). The Heteroscedasticity and Autocorrelation Consistent (\code{"hac"}) variance-covariance estimates the variance of the score (the 'meat') based on Theorem 2.2 in De Jong and Davidson (2000). For the details of the kernel weights (Bartlett) and bandwidth, see the code in the \code{\link{vcov.garchx}} function }
+  \item{bw}{\code{NULL} (default) or a non-negative numeric value, the bandwidth of the HAC coefficient-covariance. If \code{NULL}, then it is computed internally by \code{\link{vcov.garchx}} }
+  \item{kernel.weights}{\code{NULL} (default) or a non-negative numeric vector with kernel weights for the HAC coefficient-covariance estimator. If \code{NULL}, then Bartlett weights are used, see the code of \code{\link{vcov.garchx}} }
   \item{initial.values}{\code{NULL} or a numeric vector with the initial parameter values passed on to the optimisation routine, \code{\link{nlminb}}. If \code{NULL}, the default, then the values are chosen automatically}
   \item{backcast.values}{\code{NULL} or a non-negative numeric. The backcast value is used to initiate the forward recursion of the conditional variance. If \code{NULL} (default), then the value is chosen automatically (currently the average of \code{y} squared is used). If \code{backcast.values} is a non-negative numeric, then the initial recursion values are all set to this value}
   \item{lower}{numeric vector, either of length 1 or the number of parameters to be estimated, see \code{\link{nlminb}}}

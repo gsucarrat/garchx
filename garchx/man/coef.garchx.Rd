@@ -27,7 +27,8 @@
   \method{quantile}{garchx}(x, probs=0.025, names = TRUE, type = 7, as.zoo = TRUE, ...)
   \method{residuals}{garchx}(object, as.zoo = TRUE, ...)
   \method{toLatex}{garchx}(object, digits = 4, ...)
-  \method{vcov}{garchx}(object, vcov.type = NULL, ...)
+  \method{vcov}{garchx}(object, vcov.type = NULL, bw = NULL,
+    kernel.weights = NULL, ...)
 }
 
 \arguments{
@@ -46,6 +47,8 @@
   \item{type}{\code{integer} that determines the algorithm used to compute the quantile, see \code{\link{quantile}} }
   \item{digits}{\code{integer}, the number of digits in the printed LaTeX code}
   \item{vcov.type}{\code{NULL} or \code{character} that is (partially) matched to \code{"ordinary"}, \code{"robust"} or \code{"hac"}. The robust coefficient-covariance (\code{"robust"}) is that of Francq and Thieu (2019). The Heteroscedasticity and Autocorrelation Consistent (\code{"hac"}) variance-covariance estimates the variance of the score (the 'meat') based on Theorem 2.2 in De Jong and Davidson (2000). For the details of the kernel weights (Bartlett) and bandwidth, see the code in the \code{\link{vcov.garchx}} function }
+  \item{bw}{\code{NULL} or non-negative numeric value, the bandwidth of the HAC coefficient-covariance. If \code{NULL}, then it is computed internally by \code{\link{vcov.garchx}} }
+  \item{kernel.weights}{\code{NULL} (default) or a non-negative numeric vector with kernel weights for the HAC coefficient-covariance estimator. If \code{NULL}, then Bartlett weights are used, see the code of the \code{vcov.garchx} function }
   \item{\dots}{additional arguments}
 }
 

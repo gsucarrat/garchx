@@ -690,11 +690,12 @@ garchxObjective <- function(pars, aux)
 ##==================================================
 ## estimate garch
 garchx <- function(y, order=c(1,1), arch=NULL, garch=NULL, asym=NULL,
-  xreg=NULL, vcov.type=c("ordinary","robust","hac"), initial.values=NULL,
-  backcast.values=NULL, lower=0, upper=+Inf, control=list(),
-  hessian.control=list(), solve.tol=.Machine$double.eps, estimate=TRUE,
-  c.code=TRUE, penalty.value=NULL, sigma2.min=.Machine$double.eps,
-  objective.fun=1, turbo=FALSE)
+  xreg=NULL, vcov.type=c("ordinary","robust","hac"), bw=NULL,
+  kernel.weights=NULL, initial.values=NULL, backcast.values=NULL,
+  lower=0, upper=+Inf, control=list(), hessian.control=list(),
+  solve.tol=.Machine$double.eps, estimate=TRUE, c.code=TRUE,
+  penalty.value=NULL, sigma2.min=.Machine$double.eps, objective.fun=1,
+  turbo=FALSE)
 {
   ##sys.call:
   sysCall <- sys.call()
@@ -972,9 +973,10 @@ garchx <- function(y, order=c(1,1), arch=NULL, garch=NULL, asym=NULL,
       aux=aux, control=aux$hessian.control)  
 
     ##vcov:
-    aux$vcov <- vcov.garchx(aux, vcov.type=vcov.type)
+    aux$vcov <- vcov.garchx(aux, vcov.type=vcov.type, bw=bw,
+      kernel.weights=kernel.weights)
 
-  } #close if(!turbo)
+  } #close if( !turbo )
 
   ##result
   ##------
@@ -1159,7 +1161,7 @@ print.garchx <- function(x, ...){
   ##out1:
   pars <- coef.garchx(x)
   vcovmat <- vcov.garchx(x)
-  vcovComment <- comment(vcovmat)
+  vcovComment <- comment(vcovmat)[1]
   out1 <- rbind(pars, sqrt(diag(vcovmat)))
   rownames(out1) <- c("Estimate:", "Std. Error:")
 
@@ -1312,7 +1314,8 @@ toLatex.garchx <- function(object, digits=4, ...)
 
 ##==================================================
 ## extract variance-covariance matrix:
-vcov.garchx <- function(object, vcov.type=NULL, ...)
+vcov.garchx <- function(object, vcov.type=NULL, bw=NULL,
+  kernel.weights=NULL, ...)
 {
   ##compute hessian?
   ##----------------
@@ -1321,29 +1324,30 @@ vcov.garchx <- function(object, vcov.type=NULL, ...)
       aux=object, control=object$hessian.control)  
   }
 
-  ##determine vcov.type
-  ##-------------------
-  vcovTypes <- c("ordinary", "robust", "hac")
-  if( is.null(vcov.type) ){
-    sysCall <- as.list(object$sys.call)
-    if( "vcov.type" %in% names(sysCall) ){
-      whichOne <- which( "vcov.type" == names(sysCall) )
-      vcov.type <- sysCall[[ whichOne ]]
-    }else{
-      vcov.type <- vcovTypes
-    }
-  }    
-  whichType <- charmatch(vcov.type[1], vcovTypes)
-  vcov.type <- vcovTypes[ whichType ]
-
   ##vcov comment
   ##------------
-  vcovComment <-
-    ifelse("vcov" %in% names(object), comment(object$vcov), "NULL")
+  if("vcov" %in% names(object)){
+    vcovComment <- comment(object$vcov)
+  }else{
+    vcovComment <- "none"
+  }
+
+  ##determine vcov.type
+  ##-------------------
+  if( is.null(vcov.type) ){
+    vcov.type <- ifelse( vcovComment[1]=="none", "ordinary", vcovComment[1])
+  }else{
+    vcovTypes <- c("ordinary", "robust", "hac")
+    whichType <- charmatch(vcov.type[1], vcovTypes)
+    if( is.na(whichType) ){
+      stop(paste0(dQuote(vcov.type[1]), " not a possible value"))
+    }
+    vcov.type <- vcovTypes[ whichType ]
+  }
 
   ##ordinary vcov
   ##-------------
-  if( vcov.type=="ordinary" && vcovComment != "ordinary" ){
+  if( vcov.type=="ordinary" && vcovComment[1] != "ordinary" ){
 
     ##kappahat:
     if( is.null(object$residuals) ){
@@ -1358,7 +1362,8 @@ vcov.garchx <- function(object, vcov.type=NULL, ...)
     }
 
     ##vcov:
-    iN <- length(object$residuals) #divide by n for finite sample version
+    iN <- object$y.n - object$maxpqrpluss1 + 1 #divide by n for finite sample version
+    #OLD: iN <- length(residuals.garchx(object))    
     object$vcov <-
       (kappahat - 1)*solve(object$hessian, tol=object$solve.tol)/iN
     comment(object$vcov) <- "ordinary"
@@ -1367,7 +1372,7 @@ vcov.garchx <- function(object, vcov.type=NULL, ...)
         
   ##"robust" vcov
   ##-------------
-  if( vcov.type=="robust" && vcovComment!="robust" ){
+  if( vcov.type=="robust" && vcovComment[1] != "robust" ){
 
     ##inverse of J:
     Jinv <- solve(object$hessian, tol=object$solve.tol)
@@ -1398,7 +1403,8 @@ vcov.garchx <- function(object, vcov.type=NULL, ...)
     etahatadj <- object$y2/(sigma2^2)
     mIadj <- etahatadj * mIadj
     mIadj <- mIadj[ object$maxpqrpluss1:object$y.n, ]
-    iN <- length(residuals.garchx(object))    
+    iN <- object$y.n - object$maxpqrpluss1 + 1 #divide by n for finite sample version
+    #OLD: iN <- length(residuals.garchx(object))    
     mIadj <- crossprod(mIadj)/iN - object$hessian
 
     ##vcov:
@@ -1409,65 +1415,133 @@ vcov.garchx <- function(object, vcov.type=NULL, ...)
     
   ##"hac" vcov
   ##----------
-  if( vcov.type=="hac" && vcovComment!="hac" ){
+  if( vcov.type=="hac" ){
 
-    ##inverse of J:
-    Jinv <- solve(object$hessian, tol=object$solve.tol)
-    
-    ##temporary function:
-    ##(to be used to compute the derivatives of sigma2 at i)
-    funtmp <- function(i, pars){
-      object$recursion.n <- i
-      object$par <- pars
-      sigma2 <- garchxRecursion(as.numeric(object$par), object)
-      return(sigma2[i])
+    ##vcov comment:
+    ##-------------
+    if( is.na(vcovComment[2]) ){ vcovComment[2] <- "NA" }
+    if( is.na(vcovComment[3]) ){ vcovComment[3] <- "NA" }
+    ##bandwidth (bw) comment:
+    if( is.null(bw) ){     
+      bwComment <- "NULL"
+    }else{
+      bwComment <- as.character(round(bw, digits=4))
+    }
+    ##kernel weights (kw) comment:
+    if( is.null(kernel.weights) ){
+      kwComment <- "NULL"
+    }else{
+      kwComment <- as.character(round(kernel.weights, digits=4))     
     }
 
-    ##make mldot: matrix w/gradients of sigma2
-    pars <- as.numeric(object$par)
-    mldot <- matrix(NA, object$y.n, length(object$par))
-    for(i in 1:object$y.n){
-      mldot[i,] <-
-        attr(numericDeriv(quote(funtmp(i,pars)),"pars"), "gradient")
-    }
-
-    ##make mShat: matrix w/gradients of lhat
-    sigma2 <- garchxRecursion(as.numeric(object$par), object)
-    etahatadj <- object$y2/(sigma2^2)
-    mShat <- (1/sigma2 - etahatadj) * mldot #matrix w/gradients of lhat
-
-    ##bandwidth:
-    igamma_n <- 4*(object$y.n/100)^(2/9) #bandwidth
-    ##maximum lag:
-    iL <- floor(igamma_n) #note: j/iS_T > 1 when j > i
-    ##Bartlett weights:
-    vW <- 1 - 1:iL/igamma_n #Hansen (1992)
-
-    ##compute mJhat:
-    iT <- NROW(mShat) #for more compact notation
-    mIhat <- crossprod(mShat)/iT  #(j=0)
-    if( iL > 0 ){
-      for(j in 1:iL){
-        mS0 <- cbind(mShat[-c(1:j),])
-        mSj <- cbind(mShat[-c(c(iT-j+1):iT),])
-        mGhatj1 <- crossprod(mS0,mSj)/iT #divide by (iT-j) instead?
-        mGhatj2 <- crossprod(mSj,mS0)/iT #divide by (iT-j) instead?
-        mIhat <- mIhat + vW[j] * (mGhatj1 + mGhatj2)
+    ##do HAC?:
+    ##--------
+    if( vcovComment[1]=="none" ){ doHAC <- TRUE }else{ doHAC <- FALSE }
+    if( doHAC == FALSE && vcovComment[1] != "hac" ){ doHAC <- TRUE }
+    if( doHAC == FALSE && !is.null(bw) ){
+      if( bwComment!=vcovComment[2] ){ doHAC <- TRUE }
+    }    
+    if( doHAC == FALSE && !is.null(kernel.weights) ){
+      kwCommentEqual <- c(length(vcovComment)-2)==length(kwComment)
+      if( kwCommentEqual ){
+        kwCommentEqual <-  all( vcovComment[3:length(vcovComment)]==kwComment )
       }
+      if( !kwCommentEqual ){ doHAC <- TRUE }
     }
+      
+    ##do HAC:
+    ##-------
+    if( doHAC ){
 
-    ##vcov:
-    iN <- length(object$residuals) #divide by n for finite sample version
-    object$vcov <- (Jinv %*% mIhat %*% Jinv)/iN
-    comment(object$vcov) <- "hac"
-    
-  } #close if("hac")
+      ##inverse of J:
+      Jinv <- solve(object$hessian, tol=object$solve.tol)
+      
+      ##temporary function:
+      ##(to be used to compute the derivatives of sigma2 at i)
+      funtmp <- function(i, pars){
+        object$recursion.n <- i
+        object$par <- pars
+        sigma2 <- garchxRecursion(as.numeric(object$par), object)
+        return(sigma2[i])
+      }
+  
+      ##make msigma2dot: matrix w/gradients of sigma2
+      pars <- as.numeric(object$par)
+      msigma2dot <- matrix(NA, object$y.n, length(object$par))
+      for(i in 1:object$y.n){
+        msigma2dot[i,] <-
+          attr(numericDeriv(quote(funtmp(i,pars)),"pars"), "gradient")
+      }
+  
+      ##make mShat: matrix w/gradients of lhat
+      sigma2 <- garchxRecursion(as.numeric(object$par), object)
+      etahatadj <- object$y2/(sigma2^2)
+      mShat <- (1/sigma2 - etahatadj) * msigma2dot #matrix w/gradients of lhat
+  
+      ##bandwidth:
+      if( is.null(bw) ){
+        gamma_n <- 4*(object$y.n/100)^(2/9) #bandwidth
+        ##maximum lag:
+        iL <- floor(gamma_n) #note: j/iS_T > 1 when j > i
+      }else{
+        if( bw < 0 ){ stop("'bw' must be non-negative") }
+        ##maximum lag:
+        iL <- floor(bw)
+        gamma_n <- bw
+      }
+      
+      ##kernel weights:
+      if( iL < 1 ){ vW <- 0 }
+      if( iL >= 1){
+        if( is.null(kernel.weights) ){
+          ##Bartlett:
+          vW <- 1 - 1:iL/gamma_n
+        }else{
+          ##user-defined:
+          vW <- rep(0, iL)
+          minLength <- min(iL,length(kernel.weights))
+          vW[1:minLength] <- kernel.weights[1:minLength]
+        } #close if( is.null(kernel.weights) )     
+      } #close if( iL >= 1)
+      
+      ##compute mIhat:
+      iT <- NROW(mShat) #for more compact notation
+      mIhat <- crossprod(mShat)/iT  #(j=0)
+      if( iL >= 1 ){
+        for(j in 1:iL){
+          mS0 <- cbind(mShat[-c(1:j),])
+          mSj <- cbind(mShat[-c(c(iT-j+1):iT),])
+          mGhatj1 <- crossprod(mS0,mSj)/(iT-j) #divide by iT or (iT-j)?
+          mGhatj2 <- crossprod(mSj,mS0)/(iT-j) #divide by iT or (iT-j)?
+          mIhat <- mIhat + vW[j] * (mGhatj1 + mGhatj2)
+        }
+      }
+  
+      ##vcov:
+      iN <- object$y.n - object$maxpqrpluss1 + 1 #divide by n for finite sample version
+      #OLD: iN <- length(residuals.garchx(object))
+      object$vcov <- (Jinv %*% mIhat %*% Jinv)/iN
+  
+      ##vcov comment:
+      vcovComment <- c("hac", "NULL")
+      if( !is.null(bw) ){ vcovComment[2] <- as.character(round(bw, digits=4)) }
+      if( is.null(kernel.weights) ){
+        vcovComment <- c(vcovComment, "NULL")
+      }else{
+        vcovComment <-
+          c(vcovComment, as.character(round(kernel.weights, digits=4)))
+      }
+      comment(object$vcov) <- vcovComment
+
+    } #close if( doHAC )    
+
+  } #close if( "hac" ) 
 
   ##return
   ##------
   return(object$vcov) 
 
-} #close vcov.garchx
+} #close vcov.garchx()
 
 
 ####################################################
@@ -1631,8 +1705,6 @@ waldtest0 <- function(x, r=0, R=NULL, level=c(0.1,0.05,0.01),
   vcov.type=NULL, quantile.type=7, n=20000)
 {
   if( !is(x, "garchx") ){ stop("'x' not of class 'garchx'") }
-##OLD:
-##  if(class(x)!="garchx"){ stop("'x' not of class 'garchx'") }
   
   ##coefs:
   coefs <- as.numeric(coef.garchx(x))
@@ -1664,23 +1736,31 @@ waldtest0 <- function(x, r=0, R=NULL, level=c(0.1,0.05,0.01),
   
   ##critical values
   ##---------------
-  
+
+  ##based on corollary 2 in Francqu and Thieu (2019):
   Sigmahat <- nobs(x)*SigmahatT
+  RSigmahatRtinv <- solve( R %*% Sigmahat %*% t(R) )
   Zhat <- t(rmnorm(n, vcov=Sigmahat))
-  RZhat <- matrix(NA, NROW(R), n)
-  normRZhat <- rep(NA, n) #norm of RZhat
+  normRZhat <- rep(NA, n) #norm values
   for(i in 1:n){
-    RZhat[,i] <- R %*% Zhat[,i]
-    normRZhat[i] <- sum(RZhat[,i]^2)
+    RZhat <- R %*% Zhat[,i]
+    normRZhat[i] <- t(RZhat) %*% RSigmahatRtinv %*% RZhat
   }
   critical.values <-
     quantile(normRZhat, prob=1-level, type=quantile.type)
   names(critical.values) <- paste0(100*level,"%")
     
+  ##p-value
+  ##-------
+
+  whichOnes <- which( statistic >= normRZhat )
+  p.value <- length(whichOnes)/n
+  
   ##result
   ##------
   
-  result <- list(statistic=statistic, critical.values=critical.values)
+  result <-
+    list(statistic=statistic, critical.values=critical.values, p.value=p.value)
   return(result)
 
 } #close waldtest0

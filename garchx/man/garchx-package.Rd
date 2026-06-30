@@ -12,15 +12,25 @@ Flexible and robust estimation and inference of GARCH(q,p,r)-X models, where q i
   \tabular{ll}{
   Package: \tab garchx\cr
   Type: \tab Package\cr
-  Version: \tab 1.6\cr
-  Date: \tab 2025-07-09\cr
+  Version: \tab 1.8\cr
+  Date: \tab 2026-06-30\cr
   License: \tab GPL-2\cr
   }
 }
 
+\section{Vignette}{
+
+	An overview and introduction to the package is available as a vignette (type \code{browseVignettes("garchx")} to access it). The vignette is a modified version of Sucarrat (2021).\cr
+
+}
+
 \author{
-Genaro Sucarrat, \url{https://www.sucarrat.net/}\cr\cr
-Maintainer: Genaro Sucarrat
+  Genaro Sucarrat, \url{https://www.sucarrat.net/}\cr\cr
+  Maintainer: Genaro Sucarrat
+}
+
+\references{
+  Genaro Sucarrat (2021): 'garchx: Flexible and Robust GARCH-X Modelling'. The R Journal 13:1, pages 276-291. \url{https://journal.r-project.org/articles/RJ-2021-057/}
 }
 
 \seealso{

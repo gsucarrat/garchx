@@ -1,0 +1,14 @@
+bibentry(bibtype = "Article",
+  title        = "garchx: Flexible and Robust GARCH-X Modelling",
+  author       = c(person(given = "Genaro",
+                          family = "Sucarrat",
+                          email = "gsucarrat@gmail.com")),
+  journal      = "The R Journal",
+  year         = "2021",
+  volume       = "13",
+  number       = "1",
+  pages        = "276--291",
+  doi          = "10.1016/j.ijforecast.2021.03.008",
+  header       = "To cite garchx in publications use:"
+)
+

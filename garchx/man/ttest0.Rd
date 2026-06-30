@@ -22,7 +22,7 @@ The permissible parameter-space of GARCH-models is bounded from below by 0. This
   \item{level}{\code{vector} of significance levels whose critical values should be computed}
   \item{vcov.type}{\code{NULL} or a \code{character} that determines the type of coefficient-covariance to use, see \code{\link{vcov.garchx}} }
   \item{quantile.type}{integer, the algorithm used to compute the quantile, see \code{\link{quantile}} }
-  \item{n}{\code{integer}, the numer of simulations used to estimate the critical values}
+  \item{n}{\code{integer}, the number of simulations used to estimate the critical values}
 }
 
 \details{
@@ -33,11 +33,11 @@ The \code{waldtest0} function performs a Wald-test of the restrictions in \code{
 
 \value{
   \item{ttest0:}{a \code{matrix} with the t-tests}
-  \item{waldtest0:}{a \code{list} with the test-statistic and the critical values}
+  \item{waldtest0:}{a \code{list} with the test-statistic, critical values and p-value}
 }
 
 \references{
-Christian Francq and Le Quien Thieu (2018): 'QML inference for volatility models with covariates', Econometric Theory, doi:10.1017/S0266466617000512
+Christian Francq and Le Quien Thieu (2019): 'QML inference for volatility models with covariates', Econometric Theory 35, pp. 37-72,  doi:10.1017/S0266466617000512
 }
 
 \author{
